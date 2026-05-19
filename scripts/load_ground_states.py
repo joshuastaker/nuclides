@@ -130,15 +130,16 @@ def main() -> None:
 
     df = fetch_ground_states()
     df = transform_ground_states(df)
-    print(df.head(20))
-
+    #print(df.head(20))
     
 
-    #with sqlite3.connect(DB_PATH) as conn:
-    #    create_tables(conn)
-    #    load_dataframe_to_sqlite(df, conn)
+    with sqlite3.connect(DB_PATH) as conn:
+       create_tables(conn)
+       conn.execute("DELETE FROM ground_states")
+       conn.execute("DELETE FROM sqlite_sequence WHERE name='ground_states'")
+       load_dataframe_to_sqlite(df, conn)
 
-    #print(f"Loaded {len(df)} rows into {DB_PATH}")
+    print(f"Loaded {len(df)} rows into {DB_PATH}")
 
 if __name__ == "__main__":
     main()
