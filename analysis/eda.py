@@ -53,12 +53,60 @@ on_df = spin_df[
 #
 def plot_spin_distribution(df: pd.DataFrame) -> None:
     # nuclear spin distribution
-    plt.hist(spin_df["ground_state_j"], bins=20)
-    plt.xlabel("Ground State Spin")
-    plt.ylabel("Count")
-    plt.title("Distribution of Nuclear Ground State Spins")
 
+    spin_df = df[df["ground_state_j"].notna()]
+
+    # Full distribution
+    spin_counts = (
+        spin_df.groupby(["ground_state_j", "parity"])
+        .size()
+        .unstack(fill_value=0)
+    )
+
+    # Normalize to fractions
+    spin_counts = spin_counts.div(spin_counts.sum().sum())
+
+    # High-spin subset
+    high_spin_counts = spin_counts[
+        spin_counts.index >= 6
+    ]
+
+    fig, axes = plt.subplots(
+        2,
+        1,
+        figsize=(12, 8),
+        height_ratios=[3, 1]
+    )
+
+    # Full distribution
+    spin_counts.plot(
+        kind="bar",
+        stacked=True,
+        ax=axes[0],
+        edgecolor="black",
+        linewidth=0.8
+    )
+
+    axes[0].set_title("Ground State Spin Distribution by Parity")
+    axes[0].set_xlabel("Ground State J")
+    axes[0].set_ylabel("Fraction of Nuclei")
+
+    # High-spin zoom
+    high_spin_counts.plot(
+        kind="bar",
+        stacked=True,
+        ax=axes[1],
+        edgecolor="black",
+        linewidth=0.8
+    )
+
+    axes[1].set_title("High-Spin Region (J ≥ 6)")
+    axes[1].set_xlabel("Ground State J")
+    axes[1].set_ylabel("Fraction")
+
+    plt.tight_layout()
     plt.show()
+
     return
 
 def plot_parity_counts(df: pd.DataFrame) -> None:   
@@ -123,10 +171,10 @@ def plot_eoz_eon_category_grid(ez_df, oz_df, en_df, on_df) -> None:
 
 def main():
 
-    plot_spin_distribution(spin_df)
-    plot_parity_counts(spin_df)
     plot_pairing_category_grid(spin_df, ee_df, oo_df, oa_df)
-    plot_eoz_eon_category_grid(ez_df, oz_df, en_df, on_df)
+    plot_spin_distribution(spin_df)
+    #plot_parity_counts(spin_df)
+    #plot_eoz_eon_category_grid(ez_df, oz_df, en_df, on_df)
 
 if __name__ == "__main__":
     main()
